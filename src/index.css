@@ -1,0 +1,152 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  --font-editorial: 'Instrument Serif', ui-serif, Georgia, serif;
+
+  /* Warm paper neutrals — overrides the default slate scale */
+  --color-slate-50: #f8f6f1;
+  --color-slate-100: #f0ece3;
+  --color-slate-200: #e4ded1;
+  --color-slate-300: #d0c8b7;
+  --color-slate-400: #a9a08e;
+  --color-slate-500: #827968;
+  --color-slate-600: #645c4e;
+  --color-slate-700: #4d463b;
+  --color-slate-800: #302b24;
+  --color-slate-900: #1c1915;
+  --color-slate-950: #100e0b;
+
+  /* Cobalt primary — overrides the default indigo scale */
+  --color-indigo-50: #eef0ff;
+  --color-indigo-100: #e0e4ff;
+  --color-indigo-200: #c6ccff;
+  --color-indigo-300: #a3a9ff;
+  --color-indigo-400: #8084fb;
+  --color-indigo-500: #6262f2;
+  --color-indigo-600: #4b46e5;
+  --color-indigo-700: #3a37c4;
+  --color-indigo-800: #31319c;
+  --color-indigo-900: #2c2d7a;
+  --color-indigo-950: #1a1b45;
+
+  /* Flame — warm secondary accent */
+  --color-flame-50: #fff3ec;
+  --color-flame-100: #ffe3d4;
+  --color-flame-200: #ffc4a8;
+  --color-flame-300: #ff9d74;
+  --color-flame-400: #ff7a4d;
+  --color-flame-500: #f85a2b;
+  --color-flame-600: #e54412;
+  --color-flame-700: #be3410;
+  --color-flame-800: #982c13;
+  --color-flame-900: #7c2813;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-slate-50 font-sans text-slate-800;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    @apply bg-indigo-200 text-indigo-950;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(208 200 183) transparent;
+  }
+
+  .font-editorial {
+    font-family: var(--font-editorial);
+    font-weight: 400;
+    letter-spacing: -0.015em;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, rgb(48 43 36 / 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(48 43 36 / 0.05) 1px, transparent 1px);
+    background-size: 56px 56px;
+  }
+
+  .bg-grid-dark {
+    background-image:
+      linear-gradient(to right, rgb(255 255 255 / 0.06) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.06) 1px, transparent 1px);
+    background-size: 56px 56px;
+  }
+
+  .animate-float {
+    animation: float 7s ease-in-out infinite;
+  }
+
+  .animate-float-slow {
+    animation: float 9s ease-in-out infinite;
+    animation-delay: -2s;
+  }
+
+  .animate-pulse-dot {
+    animation: pulse-dot 2.4s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-9px);
+    }
+  }
+
+  @keyframes pulse-dot {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.45;
+      transform: scale(0.82);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-float,
+    .animate-float-slow,
+    .animate-pulse-dot {
+      animation: none !important;
+    }
+  }
+}

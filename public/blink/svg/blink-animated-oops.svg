@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 440" width="400" height="440" role="img" aria-label="Blink, the CodeAssist mascot" class="blk blk--full blk--oops"><style>/* Blink, the CodeAssist mascot. All loops are 3.2s (or divide it) so exports loop seamlessly. */
+
+.blk { display: inline-block; vertical-align: middle; overflow: visible; }
+.blk--face { overflow: hidden; }
+
+/* whole body */
+.blk-body { animation: blk-float 3.2s ease-in-out infinite; }
+.blk--celebrate .blk-body { animation: blk-bounce 0.8s ease-in-out infinite; }
+.blk--oops .blk-body { animation: blk-shake 3.2s ease-in-out infinite; }
+
+.blk-shadow { transform-box: fill-box; transform-origin: center; animation: blk-shadow 3.2s ease-in-out infinite; }
+.blk--celebrate .blk-shadow { animation: blk-shadow 0.8s ease-in-out infinite; }
+
+.blk-halo { animation: blk-halo 3.2s ease-in-out infinite; }
+
+/* eyes blink once per loop */
+.blk-eyes { transform-box: fill-box; transform-origin: center; animation: blk-eyes 3.2s ease-in-out infinite; }
+
+/* terminal caret on the chest */
+.blk-caret { animation: blk-caret 1.6s steps(1, end) infinite; }
+
+/* "thinking" dots in place of the mouth */
+.blk-dot { transform-box: fill-box; transform-origin: center; animation: blk-dot 1.6s ease-in-out infinite; }
+.blk-dot-2 { animation-delay: -1.4s; }
+.blk-dot-3 { animation-delay: -1.2s; }
+
+/* arms (origins are in viewBox units; only used by the full variant) */
+.blk-arm-r { transform-box: view-box; transform-origin: 252px 258px; }
+.blk-arm-l { transform-box: view-box; transform-origin: 148px 250px; }
+.blk--happy .blk-arm-r { animation: blk-wave 3.2s ease-in-out infinite; }
+.blk--happy .blk-arm-l { animation: blk-sway 3.2s ease-in-out infinite; }
+.blk--thinking .blk-arm-r { animation: blk-sway 3.2s ease-in-out infinite; }
+.blk--celebrate .blk-arm-r { animation: blk-cheer-r 0.8s ease-in-out infinite; }
+.blk--celebrate .blk-arm-l { animation: blk-cheer-l 0.8s ease-in-out infinite; }
+
+/* oops: sweat drop */
+.blk-drop { animation: blk-drop 1.6s ease-in infinite; }
+
+/* sparkles / confetti */
+.blk-spark { transform-box: fill-box; transform-origin: center; animation: blk-twinkle 3.2s ease-in-out infinite; }
+.blk-spark-2 { animation-delay: -1.1s; }
+.blk-spark-3 { animation-delay: -2.1s; }
+.blk-spark-4 { animation-delay: -0.6s; }
+.blk--celebrate .blk-spark { animation-duration: 1.6s; }
+
+@keyframes blk-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes blk-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-16px); } }
+@keyframes blk-shake {
+  0%, 70%, 100% { transform: translateX(0); }
+  74% { transform: translateX(-3px); } 78% { transform: translateX(3px); }
+  82% { transform: translateX(-3px); } 86% { transform: translateX(3px); } 90% { transform: translateX(0); }
+}
+@keyframes blk-shadow { 0%, 100% { transform: scaleX(1); opacity: 0.4; } 50% { transform: scaleX(0.88); opacity: 0.26; } }
+@keyframes blk-halo { 0%, 100% { opacity: 0.22; } 50% { opacity: 0.38; } }
+@keyframes blk-eyes { 0%, 88%, 100% { transform: scaleY(1); } 93% { transform: scaleY(0.08); } }
+@keyframes blk-caret { 0%, 49.99% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@keyframes blk-dot { 0%, 60%, 100% { transform: scale(0.7); opacity: 0.5; } 30% { transform: scale(1.25); opacity: 1; } }
+@keyframes blk-wave {
+  0%, 60%, 100% { transform: rotate(0deg); }
+  10%, 30%, 50% { transform: rotate(-24deg); }
+  20%, 40% { transform: rotate(-6deg); }
+}
+@keyframes blk-sway { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(4deg); } }
+@keyframes blk-cheer-r { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-10deg); } }
+@keyframes blk-cheer-l { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(10deg); } }
+@keyframes blk-drop { 0% { transform: translateY(0); opacity: 1; } 80% { opacity: 0.9; } 100% { transform: translateY(16px); opacity: 0; } }
+@keyframes blk-twinkle { 0%, 100% { transform: scale(0.6); opacity: 0.4; } 50% { transform: scale(1.15); opacity: 1; } }
+
+/* static mode and reduced motion */
+.blk--still, .blk--still * { animation: none !important; }
+@media (prefers-reduced-motion: reduce) { .blk, .blk * { animation: none !important; } }
+</style><defs><linearGradient id="blkR0g" gradientUnits="userSpaceOnUse" x1="0" y1="72" x2="0" y2="380"><stop offset="0" stop-color="#38E1F5"></stop><stop offset="0.55" stop-color="#3B82F6"></stop><stop offset="1" stop-color="#6366F1"></stop></linearGradient><filter id="blkR0f" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="6" result="b"></feGaussianBlur><feMerge><feMergeNode in="b"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge></filter></defs><ellipse class="blk-shadow" cx="200" cy="408" rx="130" ry="13" fill="#3B82F6" opacity="0.4" filter="url(#blkR0f)"></ellipse><g class="blk-body"><rect class="blk-halo" x="148" y="88" width="104" height="280" rx="40" fill="#22D3EE" opacity="0.3" filter="url(#blkR0f)"></rect><g class="blk-arm blk-arm-l"><path d="M148 250 C118 246 98 224 94 196" stroke="#3B82F6" stroke-width="20" fill="none" stroke-linecap="round"></path><circle cx="94" cy="188" r="16" fill="#60A5FA"></circle></g><g class="blk-arm blk-arm-r"><path d="M252 260 C284 264 304 252 314 232" stroke="#3B82F6" stroke-width="20" fill="none" stroke-linecap="round"></path><circle cx="316" cy="226" r="16" fill="#60A5FA"></circle><g class="blk-braces" fill="none" stroke="#FBBF24" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" filter="url(#blkR0f)"><path d="M308 150 C300 150 302 158 302 164 C302 170 298 172 294 172 C298 172 302 174 302 180 C302 186 300 194 308 194"></path><path d="M328 150 C336 150 334 158 334 164 C334 170 338 172 342 172 C338 172 334 174 334 180 C334 186 336 194 328 194"></path></g></g><ellipse cx="140" cy="394" rx="22" ry="10" fill="#1E3A8A"></ellipse><ellipse cx="260" cy="394" rx="22" ry="10" fill="#1E3A8A"></ellipse><rect x="112" y="352" width="176" height="28" rx="14" fill="url(#blkR0g)"></rect><rect x="112" y="72" width="176" height="28" rx="14" fill="url(#blkR0g)"></rect><rect x="148" y="88" width="104" height="280" rx="40" fill="url(#blkR0g)" stroke="#BAE6FD" stroke-opacity="0.5" stroke-width="3"></rect><path d="M166 130 C164 190 164 260 168 320" stroke="#fff" stroke-opacity="0.28" stroke-width="6" fill="none" stroke-linecap="round"></path><g><g class="blk-eyes"><circle cx="180" cy="198" r="16" fill="#F0F9FF"></circle><circle cx="220" cy="198" r="16" fill="#F0F9FF"></circle><circle cx="180" cy="199" r="5.5" fill="#0B1B4A"></circle><circle cx="220" cy="199" r="5.5" fill="#0B1B4A"></circle><circle cx="182" cy="197" r="2" fill="#fff"></circle><circle cx="222" cy="197" r="2" fill="#fff"></circle></g><g fill="none" stroke="#0B1B4A" stroke-width="5" stroke-linecap="round"><path d="M164 180 L194 170"></path><path d="M206 170 L236 180"></path></g></g><path d="M184 247 Q192 239 200 247 T216 247" fill="none" stroke="#0B1B4A" stroke-width="5" stroke-linecap="round"></path><circle cx="166" cy="236" r="8" fill="#F472B6" opacity="0.25"></circle><circle cx="234" cy="236" r="8" fill="#F472B6" opacity="0.25"></circle><path class="blk-drop" d="M248 150 C242 160 240 166 248 170 C256 166 254 160 248 150 Z" fill="#7DD3FC"></path><g><path d="M180 292 L198 306 L180 320" fill="none" stroke="#F0F9FF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path><rect class="blk-caret" x="207" y="316" width="22" height="6" rx="3" fill="#F87171"></rect></g></g></svg>
