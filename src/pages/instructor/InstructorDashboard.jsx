@@ -16,6 +16,7 @@ export default function InstructorDashboard() {
   const activityMap = new Map(db.activities.map((a) => [a.id, a]))
   const userMap = new Map(db.users.map((u) => [u.id, u]))
   const sectionMap = new Map(db.sections.map((s) => [s.id, s]))
+  const subjectMap = new Map(db.subjects.map((s) => [s.id, s]))
   const firstName = user.name.replace(/^Prof\.\s*/, '').split(' ')[0]
 
   return (
@@ -78,6 +79,7 @@ export default function InstructorDashboard() {
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {db.sections.map((section) => {
             const counts = sectionCounts(db, section.id)
+            const subject = subjectMap.get(section.subjectId)
             return (
               <Link
                 key={section.id}
@@ -98,6 +100,11 @@ export default function InstructorDashboard() {
                   <h3 className="mt-3 font-semibold text-slate-900 transition group-hover:text-indigo-600">
                     {section.name}
                   </h3>
+                  {subject && (
+                    <p className="mt-0.5 truncate text-xs font-medium text-indigo-600">
+                      {subject.code} · {subject.name}
+                    </p>
+                  )}
                   <p className="mt-1 text-xs text-slate-500">{section.schedule}</p>
                   <p className="text-xs text-slate-400">{section.room}</p>
                 </div>

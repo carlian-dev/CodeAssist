@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useStore } from '../../store/store'
-import { sectionById } from '../../lib/selectors'
+import { sectionById, subjectById } from '../../lib/selectors'
 import { generateProblem } from '../../lib/blink'
 import { Badge, Blink, Button, Card, Field, Input, Select, Textarea, Toggle, cx } from '../../components/ui'
 import { Icon } from '../../components/icons'
@@ -18,15 +18,13 @@ export default function CreateActivity() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
 
-  const initialSectionId = sectionById(db, params.get('sectionId'))?.id || db.sections[0].id
-  const requestedSubject = params.get('subjectId')
-  const initialSubjectId = db.subjects.some((s) => s.id === requestedSubject)
-    ? requestedSubject
-    : db.subjects[0].id
+  const initialSection = sectionById(db, params.get('sectionId')) || db.sections[0]
+  const initialSectionId = initialSection.id
+  const initialSubject = subjectById(db, initialSection.subjectId)
+  const eligibleSections = db.sections.filter((s) => s.subjectId === initialSection.subjectId)
 
   const [form, setForm] = useState({
     title: '',
-    subjectId: initialSubjectId,
     language: 'Python',
     points: 30,
     dueDate: defaultDueDate(),
@@ -53,7 +51,7 @@ export default function CreateActivity() {
     try {
       const draft = await generateProblem({
         lesson,
-        subjectId: form.subjectId,
+        subjectId: initialSection.subjectId,
         difficulty,
         language: form.language,
       })
@@ -125,14 +123,10 @@ export default function CreateActivity() {
           </Field>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Subject" htmlFor="subject">
-              <Select id="subject" value={form.subjectId} onChange={(e) => update('subjectId', e.target.value)}>
-                {db.subjects.map((subject) => (
-                  <option key={subject.id} value={subject.id}>
-                    {subject.code} · {subject.name}
-                  </option>
-                ))}
-              </Select>
+            <Field label="Subject" hint="Set by the section — one subject per section.">
+              <div className="flex h-10 items-center rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-700">
+                {initialSubject ? `${initialSubject.code} · ${initialSubject.name}` : 'No subject'}
+              </div>
             </Field>
             <Field label="Language" htmlFor="language">
               <Select id="language" value={form.language} onChange={(e) => update('language', e.target.value)}>
@@ -243,7 +237,7 @@ export default function CreateActivity() {
                 </p>
               )}
               <p className="text-[11px] leading-relaxed text-slate-400">
-                BLINK uses your lesson and the selected subject to create a starting point. You stay in control of what
+                BLINK uses your lesson and the section's subject to create a starting point. You stay in control of what
                 gets published.
               </p>
             </div>

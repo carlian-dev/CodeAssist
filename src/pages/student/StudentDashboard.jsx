@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../../store/auth'
 import { useStore } from '../../store/store'
-import { activitiesForSection, sectionById, studentSummary, subjectById, subjectProgress, submissionFor } from '../../lib/selectors'
+import { activitiesForSection, sectionById, studentSummary, subjectById, submissionFor } from '../../lib/selectors'
 import { dueLabel, isOverdue } from '../../lib/format'
-import { Badge, Blink, EmptyState, ProgressBar, Stat, cx } from '../../components/ui'
+import { Badge, Blink, EmptyState, Stat, cx } from '../../components/ui'
 import { Icon } from '../../components/icons'
 
 const FILTERS = [
@@ -25,17 +25,14 @@ function statusFor(submission) {
 export default function StudentDashboard() {
   const { user } = useAuth()
   const { db } = useStore()
-  const [params, setParams] = useSearchParams()
   const [filter, setFilter] = useState('all')
 
-  const activeSubject = params.get('subject')
   const section = user.sectionId ? sectionById(db, user.sectionId) : null
+  const subject = section ? subjectById(db, section.subjectId) : null
   const summary = studentSummary(db, user)
   const activities = user.sectionId ? activitiesForSection(db, user.sectionId) : []
 
-  const rows = activities
-    .filter((activity) => !activeSubject || activity.subjectId === activeSubject)
-    .map((activity) => ({ activity, submission: submissionFor(db, activity.id, user.id) }))
+  const rows = activities.map((activity) => ({ activity, submission: submissionFor(db, activity.id, user.id) }))
 
   const visible = rows
     .filter(({ submission }) => {
@@ -51,11 +48,6 @@ export default function StudentDashboard() {
       return new Date(a.activity.dueDate) - new Date(b.activity.dueDate)
     })
 
-  const toggleSubject = (id) => {
-    if (activeSubject === id) setParams({})
-    else setParams({ subject: id })
-  }
-
   const firstName = user.name.split(' ')[0]
 
   return (
@@ -65,6 +57,11 @@ export default function StudentDashboard() {
           <p className="text-xs font-bold uppercase tracking-wider text-indigo-600">
             {section ? `${section.code} · ${section.name}` : 'Awaiting Section Invitation'}
           </p>
+          {subject && (
+            <p className="mt-0.5 text-sm font-semibold text-slate-600">
+              {subject.code} · {subject.name}
+            </p>
+          )}
           <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">Hi, {firstName}</h1>
           <p className="mt-1 text-sm text-slate-500">
             {section
@@ -117,59 +114,11 @@ export default function StudentDashboard() {
       </div>
 
       <section className="mt-8">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Subjects</h2>
-          {activeSubject && (
-            <button
-              type="button"
-              onClick={() => setParams({})}
-              className="text-xs font-semibold text-indigo-600 hover:text-indigo-700"
-            >
-              Clear filter
-            </button>
-          )}
-        </div>
-        <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {db.subjects.map((subject) => {
-            const progress = subjectProgress(db, user, subject.id)
-            const active = activeSubject === subject.id
-            return (
-              <button
-                key={subject.id}
-                type="button"
-                onClick={() => toggleSubject(subject.id)}
-                className={cx(
-                  'rounded-2xl border bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md',
-                  active ? 'border-indigo-300 ring-2 ring-indigo-100' : 'border-slate-200',
-                )}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <span className="text-[11px] font-bold uppercase tracking-wide text-indigo-600">{subject.code}</span>
-                    <p className="text-sm font-semibold text-slate-800">{subject.name}</p>
-                  </div>
-                  <span className="shrink-0 text-xs font-semibold text-slate-400">
-                    {progress.done}/{progress.total}
-                  </span>
-                </div>
-                <p className="mt-1 text-xs text-slate-500">{subject.blurb}</p>
-                <ProgressBar
-                  className="mt-3"
-                  value={progress.percent}
-                  tone={progress.total && progress.percent === 100 ? 'emerald' : 'indigo'}
-                />
-              </button>
-            )
-          })}
-        </div>
-      </section>
-
-      <section className="mt-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-bold tracking-tight text-slate-900">Activities</h2>
             <p className="text-sm text-slate-500">
-              {activeSubject ? subjectById(db, activeSubject)?.name : 'All subjects in your section'}
+              {subject ? `${subject.code} · ${subject.name}` : 'Your class activities'}
             </p>
           </div>
           <div className="flex gap-1 rounded-xl bg-slate-100 p-1">

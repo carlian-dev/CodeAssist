@@ -88,13 +88,17 @@ export function StoreProvider({ children }) {
     }
 
     const createActivities = ({ base, sectionIds }) => {
-      const created = sectionIds.map((sectionId) => ({
-        ...base,
-        id: makeId('act'),
-        sectionId,
-        createdBy: 'ins-1',
-        createdAt: new Date().toISOString(),
-      }))
+      const created = sectionIds.map((sectionId) => {
+        const section = db.sections.find((s) => s.id === sectionId)
+        return {
+          ...base,
+          subjectId: section?.subjectId ?? base.subjectId,
+          id: makeId('act'),
+          sectionId,
+          createdBy: 'ins-1',
+          createdAt: new Date().toISOString(),
+        }
+      })
       setDb((prev) => ({ ...prev, activities: [...created, ...prev.activities] }))
       return created
     }

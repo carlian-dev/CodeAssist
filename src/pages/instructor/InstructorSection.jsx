@@ -11,19 +11,17 @@ import {
   submissionFor,
 } from '../../lib/selectors'
 import { dueLabel, isOverdue } from '../../lib/format'
-import { Avatar, Badge, Blink, Button, Card, EmptyState, Field, Input, ProgressBar, Select, Stat, buttonStyles, cx } from '../../components/ui'
+import { Avatar, Badge, Blink, Button, Card, EmptyState, Field, Input, ProgressBar, Stat, buttonStyles, cx } from '../../components/ui'
 import { Icon } from '../../components/icons'
 
 export default function InstructorSection() {
   const { sectionId } = useParams()
   const { db, inviteStudentToSection, removeStudentFromSection } = useStore()
   const location = useLocation()
-  const [subjectFilter, setSubjectFilter] = useState('all')
 
   const [showInviteModal, setShowInviteModal] = useState(false)
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteName, setInviteName] = useState('')
-  const [inviteSubject, setInviteSubject] = useState('')
   const [inviteError, setInviteError] = useState('')
   const [inviteSuccess, setInviteSuccess] = useState('')
 
@@ -47,11 +45,9 @@ export default function InstructorSection() {
   const activities = activitiesForSection(db, section.id)
   const students = studentsInSection(db, section.id)
   const counts = sectionCounts(db, section.id)
-  const visible = subjectFilter === 'all' ? activities : activities.filter((a) => a.subjectId === subjectFilter)
+  const subject = subjectById(db, section.subjectId)
 
-  const createLink = `/instructor/activity/new?sectionId=${section.id}${
-    subjectFilter !== 'all' ? `&subjectId=${subjectFilter}` : ''
-  }`
+  const createLink = `/instructor/activity/new?sectionId=${section.id}`
 
   const handleInviteSubmit = (e) => {
     e.preventDefault()
@@ -73,15 +69,12 @@ export default function InstructorSection() {
       email: cleanEmail,
       name: inviteName,
       sectionId: section.id,
-      subjectId: inviteSubject || null,
+      subjectId: section.subjectId,
     })
 
-    const subjectObj = inviteSubject ? subjectById(db, inviteSubject) : null
-    const subjectInfo = subjectObj ? ` for ${subjectObj.code}` : ''
-    setInviteSuccess(`Invited ${invitedUser.name} (${invitedUser.email}) to ${section.code}${subjectInfo}!`)
+    setInviteSuccess(`Invited ${invitedUser.name} (${invitedUser.email}) to ${section.code}!`)
     setInviteEmail('')
     setInviteName('')
-    setInviteSubject('')
     setShowInviteModal(false)
   }
 
@@ -108,7 +101,14 @@ export default function InstructorSection() {
             <span className="grid h-9 w-12 place-items-center rounded-xl bg-indigo-600 text-sm font-bold text-white">
               {section.code}
             </span>
-            <p className="text-xs font-bold uppercase tracking-wider text-indigo-600">{section.name}</p>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-indigo-600">{section.name}</p>
+              {subject && (
+                <p className="text-xs font-semibold text-slate-500">
+                  {subject.code} · {subject.name}
+                </p>
+              )}
+            </div>
           </div>
           <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">Section workspace</h1>
           <p className="mt-1 text-sm text-slate-500">
@@ -173,43 +173,8 @@ export default function InstructorSection() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_300px]">
         <div>
-          <div className="flex flex-wrap gap-1.5">
-            <button
-              type="button"
-              onClick={() => setSubjectFilter('all')}
-              className={cx(
-                'rounded-full px-3 py-1.5 text-xs font-semibold transition',
-                subjectFilter === 'all'
-                  ? 'bg-slate-900 text-white'
-                  : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50',
-              )}
-            >
-              All subjects
-              <span className="ml-1 opacity-60">{activities.length}</span>
-            </button>
-            {db.subjects.map((subject) => {
-              const count = activities.filter((a) => a.subjectId === subject.id).length
-              return (
-                <button
-                  key={subject.id}
-                  type="button"
-                  onClick={() => setSubjectFilter(subject.id)}
-                  className={cx(
-                    'rounded-full px-3 py-1.5 text-xs font-semibold transition',
-                    subjectFilter === subject.id
-                      ? 'bg-slate-900 text-white'
-                      : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50',
-                  )}
-                >
-                  {subject.code}
-                  <span className="ml-1 opacity-60">{count}</span>
-                </button>
-              )
-            })}
-          </div>
-
           <div className="mt-4 space-y-2">
-            {visible.length === 0 ? (
+            {activities.length === 0 ? (
               <EmptyState
                 title="No activities here yet"
                 description="Create an activity for this subject and it will appear in your students' to-do lists."
@@ -221,8 +186,8 @@ export default function InstructorSection() {
                 }
               />
             ) : (
-              visible.map((activity) => {
-                const subject = subjectById(db, activity.subjectId)
+              activities.map((activity) => {
+                const activitySubject = subjectById(db, activity.subjectId)
                 const stats = activityCounts(db, activity)
                 const overdue = isOverdue(activity.dueDate)
                 return (
@@ -233,7 +198,7 @@ export default function InstructorSection() {
                   >
                     <div className="flex items-start gap-3">
                       <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-slate-50 text-[10px] font-bold text-slate-500">
-                        {subject?.code}
+                        {activitySubject?.code}
                       </span>
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
@@ -363,7 +328,7 @@ export default function InstructorSection() {
                     Invite to {section.code}
                   </h2>
                   <p className="text-xs text-slate-500">
-                    Add a student by email to this section or subject.
+                    Add a student by email to this class.
                   </p>
                 </div>
               </div>
@@ -416,27 +381,9 @@ export default function InstructorSection() {
                 />
               </Field>
 
-              <Field
-                label="Subject focus (optional)"
-                htmlFor="invite-subject"
-                hint="Assign to a specific subject module or all subjects"
-              >
-                <Select
-                  id="invite-subject"
-                  value={inviteSubject}
-                  onChange={(e) => setInviteSubject(e.target.value)}
-                >
-                  <option value="">All section subjects</option>
-                  {db.subjects.map((sub) => (
-                    <option key={sub.id} value={sub.id}>
-                      {sub.code} — {sub.name}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
-
               <div className="rounded-2xl border border-slate-100 bg-slate-50 p-3 text-xs text-slate-600">
-                <span className="font-semibold text-slate-800">Target section:</span> {section.code} · {section.name} ({section.schedule})
+                <span className="font-semibold text-slate-800">Class:</span> {section.code} · {section.name}
+                {subject ? ` · ${subject.code} ${subject.name}` : ''}
               </div>
 
               <div className="mt-6 flex items-center justify-end gap-2.5 pt-2">
