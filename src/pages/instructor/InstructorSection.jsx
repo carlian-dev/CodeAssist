@@ -120,6 +120,13 @@ export default function InstructorSection() {
             <Icon name="mail" className="h-4 w-4" />
             Invite student
           </Button>
+          <Link
+            to={`/instructor/section/${section.id}/materials`}
+            className={buttonStyles('secondary', 'md')}
+          >
+            <Icon name="book" className="h-4 w-4" />
+            Learning materials
+          </Link>
           <Link to={createLink} className={buttonStyles('primary', 'md')}>
             <Icon name="plus" className="h-4 w-4" />
             Create activity

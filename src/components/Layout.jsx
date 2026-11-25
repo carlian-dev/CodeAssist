@@ -84,6 +84,9 @@ export default function Layout() {
             end
             onNavigate={close}
           />
+          {isStudent && (
+            <SidebarLink to="/student/materials" icon="book" label="Learning Materials" onNavigate={close} />
+          )}
           <SidebarLink to="/playground" icon="code" label="Playground" onNavigate={close} />
         </div>
 

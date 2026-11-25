@@ -9,10 +9,12 @@ import Playground from './pages/Playground'
 import StudentDashboard from './pages/student/StudentDashboard'
 import StudentSection from './pages/student/StudentSection'
 import StudentActivity from './pages/student/StudentActivity'
+import LearningMaterials from './pages/student/LearningMaterials'
 import InstructorDashboard from './pages/instructor/InstructorDashboard'
 import InstructorSection from './pages/instructor/InstructorSection'
 import CreateActivity from './pages/instructor/CreateActivity'
 import ActivityReview from './pages/instructor/ActivityReview'
+import InstructorMaterials from './pages/instructor/InstructorMaterials'
 
 function homeFor(role) {
   return role === 'instructor' ? '/instructor' : '/student'
@@ -58,6 +60,7 @@ export default function App() {
           <Route path="/student" element={<StudentDashboard />} />
           <Route path="/student/section/:sectionId" element={<StudentSection />} />
           <Route path="/student/activity/:activityId" element={<StudentActivity />} />
+          <Route path="/student/materials" element={<LearningMaterials />} />
         </Route>
 
         <Route
@@ -69,6 +72,7 @@ export default function App() {
         >
           <Route path="/instructor" element={<InstructorDashboard />} />
           <Route path="/instructor/section/:sectionId" element={<InstructorSection />} />
+          <Route path="/instructor/section/:sectionId/materials" element={<InstructorMaterials />} />
           <Route path="/instructor/activity/new" element={<CreateActivity />} />
           <Route path="/instructor/activity/:activityId" element={<ActivityReview />} />
         </Route>

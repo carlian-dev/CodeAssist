@@ -116,6 +116,37 @@ export async function generateProblem({ lesson, subjectId, difficulty = 'medium'
   }
 }
 
+export async function customizeLesson({ lesson, request }) {
+  await wait(900)
+  const clean = request.trim().replace(/\s+/g, ' ').replace(/[.!?]+$/, '')
+  const lower = clean.toLowerCase()
+  const notes = []
+
+  if (/simpl|easy|beginner|slow/.test(lower)) {
+    notes.push('We will go through this lesson step by step and define each new term before using it.')
+  }
+  if (/example|real.world|scenario|situation/.test(lower)) {
+    notes.push('We will spend extra time on a real-world example that connects this topic to something familiar.')
+  }
+  if (/quiz|question|practice|test/.test(lower)) {
+    notes.push('We will review the quiz answers together and discuss why each option is correct or incorrect.')
+  }
+  if (/error|mistake|debug|confus/.test(lower)) {
+    notes.push('We will pause on common mistakes and see how to spot and fix them.')
+  }
+  if (/challenge|advanced|fast|extra/.test(lower)) {
+    notes.push('There is a short challenge for students who finish early.')
+  }
+  if (notes.length === 0) {
+    notes.push(`This lesson focuses on: ${clean}.`)
+  }
+
+  return {
+    note: notes.join(' '),
+    reply: `Done — I applied your focus to "${lesson.title}". Review the lesson preview above, then publish when it looks right.`,
+  }
+}
+
 const TEST_CASE_BANK = [
   {
     match: /hello,?\s*world/i,

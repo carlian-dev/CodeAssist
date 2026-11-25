@@ -20,6 +20,22 @@ export function activitiesForSection(db, sectionId) {
     .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
 }
 
+export function sectionLanguage(db, sectionId) {
+  const counts = new Map()
+  activitiesForSection(db, sectionId).forEach((a) => {
+    counts.set(a.language, (counts.get(a.language) || 0) + 1)
+  })
+  return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || 'Python'
+}
+
+export function customizationsForSection(db, sectionId) {
+  return Object.fromEntries(
+    db.lessonCustomizations
+      .filter((c) => c.sectionId === sectionId)
+      .map((c) => [c.lessonId, c]),
+  )
+}
+
 export function submissionFor(db, activityId, studentId) {
   return db.submissions.find((s) => s.activityId === activityId && s.studentId === studentId) || null
 }

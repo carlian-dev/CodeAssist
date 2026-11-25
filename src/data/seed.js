@@ -188,9 +188,24 @@ const SUBMISSION_SEED = [
   },
 ]
 
+const PUBLISHED_MATERIALS_SEED = [
+  { id: 'mat-1', sectionId: 't151', language: 'Python' },
+]
+
+const LESSON_CUSTOMIZATION_SEED = [
+  {
+    id: 'cus-1',
+    sectionId: 't151',
+    lessonId: 'py-2',
+    request: 'Slow down and add a real-world example about student grades',
+    note: 'We will go through this lesson step by step and define each new term before using it. We will spend extra time on a real-world example that connects variables to a student record.',
+    updatedAt: due(-2),
+  },
+]
+
 export function createSeed() {
   return {
-    version: 4,
+    version: 6,
     subjects: SUBJECTS,
     sections: SECTIONS,
     users: [
@@ -199,5 +214,7 @@ export function createSeed() {
     ],
     activities: ACTIVITY_SEED,
     submissions: SUBMISSION_SEED,
+    publishedMaterials: PUBLISHED_MATERIALS_SEED,
+    lessonCustomizations: LESSON_CUSTOMIZATION_SEED,
   }
 }

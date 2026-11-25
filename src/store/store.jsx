@@ -1,14 +1,14 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { createSeed } from '../data/seed'
 
-const DB_KEY = 'codeassist:db:v4'
+const DB_KEY = 'codeassist:db:v6'
 
 function loadDb() {
   try {
     const raw = localStorage.getItem(DB_KEY)
     if (raw) {
       const parsed = JSON.parse(raw)
-      if (parsed && parsed.version === 4) return parsed
+      if (parsed && parsed.version === 6) return parsed
     }
   } catch {
     // fall through to a fresh seed
@@ -174,6 +174,64 @@ export function StoreProvider({ children }) {
       }))
     }
 
+    const setMaterialsPublished = ({ sectionId, language, published }) => {
+      setDb((prev) => {
+        const exists = prev.publishedMaterials.some(
+          (m) => m.sectionId === sectionId && m.language === language,
+        )
+        if (published === exists) return prev
+        return {
+          ...prev,
+          publishedMaterials: published
+            ? [...prev.publishedMaterials, { id: makeId('mat'), sectionId, language }]
+            : prev.publishedMaterials.filter(
+                (m) => !(m.sectionId === sectionId && m.language === language),
+              ),
+        }
+      })
+    }
+
+    const saveLessonCustomization = ({ sectionId, lessonId, request, note }) => {
+      setDb((prev) => {
+        const existing = prev.lessonCustomizations.find(
+          (c) => c.sectionId === sectionId && c.lessonId === lessonId,
+        )
+        if (existing) {
+          return {
+            ...prev,
+            lessonCustomizations: prev.lessonCustomizations.map((c) =>
+              c.id === existing.id
+                ? { ...c, request, note, updatedAt: new Date().toISOString() }
+                : c,
+            ),
+          }
+        }
+        return {
+          ...prev,
+          lessonCustomizations: [
+            ...prev.lessonCustomizations,
+            {
+              id: makeId('cus'),
+              sectionId,
+              lessonId,
+              request,
+              note,
+              updatedAt: new Date().toISOString(),
+            },
+          ],
+        }
+      })
+    }
+
+    const clearLessonCustomization = ({ sectionId, lessonId }) => {
+      setDb((prev) => ({
+        ...prev,
+        lessonCustomizations: prev.lessonCustomizations.filter(
+          (c) => !(c.sectionId === sectionId && c.lessonId === lessonId),
+        ),
+      }))
+    }
+
     const resetDemo = () => {
       const seeded = createSeed()
       setDb(seeded)
@@ -193,6 +251,9 @@ export function StoreProvider({ children }) {
       registerUser,
       inviteStudentToSection,
       removeStudentFromSection,
+      setMaterialsPublished,
+      saveLessonCustomization,
+      clearLessonCustomization,
       resetDemo,
     }
   }, [db])
