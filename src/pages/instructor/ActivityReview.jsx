@@ -10,8 +10,9 @@ import {
   userById,
 } from '../../lib/selectors'
 import { dueLabel, formatDateTime, isOverdue, timeAgo } from '../../lib/format'
-import { instructorFeedback } from '../../lib/blink'
-import { Avatar, Badge, Blink, Button, Card, EmptyState, Field, Input, Stat, Textarea, cx } from '../../components/ui'
+import { instructorFeedback, analyzeSubmissions } from '../../lib/blink'
+import { runTestCases } from '../../lib/judge'
+import { Avatar, Badge, Blink, Button, Card, EmptyState, Field, Input, ProgressBar, Stat, Textarea, cx } from '../../components/ui'
 import { Icon } from '../../components/icons'
 
 function SubmissionCard({ submission, student, activity, onGrade }) {
@@ -22,6 +23,8 @@ function SubmissionCard({ submission, student, activity, onGrade }) {
 
   const lineCount = submission.code.split('\n').length
   const graded = submission.status === 'graded'
+  const testResults = runTestCases(activity.testCases, submission.code)
+  const passedCount = testResults.filter((result) => result.passed).length
 
   const handleSave = () => {
     onGrade({ submissionId: submission.id, grade, feedback })
@@ -64,6 +67,57 @@ function SubmissionCard({ submission, student, activity, onGrade }) {
             {submission.code}
           </pre>
         </div>
+
+        {testResults.length > 0 && (
+          <div className="overflow-hidden rounded-xl border border-slate-200">
+            <div className="flex items-center justify-between gap-2 border-b border-slate-100 bg-slate-50/70 px-3 py-2">
+              <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Test cases</p>
+              <Badge
+                tone={
+                  passedCount === testResults.length ? 'emerald' : passedCount === 0 ? 'rose' : 'amber'
+                }
+              >
+                {passedCount}/{testResults.length} passed
+              </Badge>
+            </div>
+            <ul className="divide-y divide-slate-100">
+              {testResults.map((result, index) => (
+                <li key={index} className="px-3 py-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-xs font-semibold text-slate-600">
+                      Test {index + 1}
+                      {result.type === 'code' ? ` · ${result.label}` : ''}
+                    </span>
+                    <Badge tone={result.passed ? 'emerald' : 'rose'}>
+                      <Icon name={result.passed ? 'check' : 'x'} className="h-3 w-3" />
+                      {result.passed ? 'Passed' : 'Failed'}
+                    </Badge>
+                  </div>
+                  {result.type === 'code' ? (
+                    <p className="mt-1 text-[11px] text-slate-400">
+                      Checks the structure of the submitted code.
+                    </p>
+                  ) : (
+                    <div className="mt-1.5 grid gap-2 text-xs sm:grid-cols-2">
+                      <div>
+                        <p className="font-semibold text-slate-500">Input</p>
+                        <pre className="scrollbar-thin mt-0.5 max-h-24 overflow-auto whitespace-pre-wrap break-words rounded bg-slate-50 px-2 py-1 font-mono text-[11.5px] text-slate-600">
+                          {result.input || '(no input)'}
+                        </pre>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-slate-500">Expected output</p>
+                        <pre className="scrollbar-thin mt-0.5 max-h-24 overflow-auto whitespace-pre-wrap break-words rounded bg-slate-50 px-2 py-1 font-mono text-[11.5px] text-slate-600">
+                          {result.expectedOutput || '(empty)'}
+                        </pre>
+                      </div>
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <div className="grid gap-3 sm:grid-cols-[120px_1fr]">
           <Field label="Grade" htmlFor={`grade-${submission.id}`}>
@@ -123,6 +177,8 @@ function SubmissionCard({ submission, student, activity, onGrade }) {
 export default function ActivityReview() {
   const { activityId } = useParams()
   const { db, gradeSubmission } = useStore()
+  const [analysis, setAnalysis] = useState(null)
+  const [analyzing, setAnalyzing] = useState(false)
 
   const activity = db.activities.find((a) => a.id === activityId)
   if (!activity) {
@@ -146,6 +202,14 @@ export default function ActivityReview() {
   const stats = activityCounts(db, activity)
   const missing = students.filter((s) => !submissions.some((sub) => sub.studentId === s.id))
   const overdue = isOverdue(activity.dueDate)
+
+  const handleAnalyze = async () => {
+    if (analyzing || submissions.length === 0) return
+    setAnalyzing(true)
+    const result = await analyzeSubmissions({ activity, submissions })
+    setAnalysis(result)
+    setAnalyzing(false)
+  }
 
   return (
     <div>
@@ -222,16 +286,109 @@ export default function ActivityReview() {
                 </pre>
               </div>
             )}
+            {activity.testCases?.length > 0 && (
+              <div className="rounded-xl bg-slate-50 p-3.5">
+                <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Test cases</p>
+                <ul className="mt-2 space-y-2">
+                  {activity.testCases.map((testCase, index) =>
+                    testCase.type === 'code' ? (
+                      <li key={index} className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                        <span className="font-semibold text-slate-500">Test {index + 1} · Code check</span>
+                        <span className="text-slate-700">{testCase.label}</span>
+                      </li>
+                    ) : (
+                      <li key={index} className="grid gap-2 text-xs sm:grid-cols-2">
+                        <div>
+                          <p className="font-semibold text-slate-500">Input</p>
+                          <pre className="mt-0.5 whitespace-pre-wrap break-words font-mono text-[11.5px] text-slate-700">
+                            {testCase.input || '(no input)'}
+                          </pre>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-slate-500">Expected output</p>
+                          <pre className="mt-0.5 whitespace-pre-wrap break-words font-mono text-[11.5px] text-slate-700">
+                            {testCase.expectedOutput}
+                          </pre>
+                        </div>
+                      </li>
+                    ),
+                  )}
+                </ul>
+              </div>
+            )}
           </div>
         </details>
       </Card>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_300px]">
         <div>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-lg font-bold tracking-tight text-slate-900">Submissions</h2>
-            <Badge tone="slate">{submissions.length}</Badge>
+            <div className="flex items-center gap-2">
+              <Badge tone="slate">{submissions.length}</Badge>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleAnalyze}
+                disabled={analyzing || submissions.length === 0}
+              >
+                <Blink
+                  variant="face"
+                  size={16}
+                  mood={analyzing ? 'thinking' : 'happy'}
+                  animated={analyzing}
+                  className="mr-0.5"
+                />
+                {analyzing ? 'BLINK is checking...' : 'BLINK check'}
+              </Button>
+            </div>
           </div>
+          <p className="mt-1 text-[11px] text-slate-400">
+            Output-test results are simulated; code checks use pattern matching.
+          </p>
+
+          {analysis && (
+            <Card className="mt-3 p-4">
+              <div className="flex items-center gap-2.5">
+                <span className="grid h-8 w-8 place-items-center rounded-xl bg-slate-900">
+                  <Blink variant="face" size={22} animated={false} />
+                </span>
+                <div>
+                  <p className="text-sm font-bold text-slate-800">Student error analysis</p>
+                  <p className="text-[11px] text-slate-500">
+                    {analysis.analyzed} submission{analysis.analyzed === 1 ? '' : 's'} checked
+                  </p>
+                </div>
+              </div>
+
+              {analysis.categories.length > 0 && (
+                <div className="mt-4 space-y-3">
+                  {analysis.categories.map((category) => (
+                    <div key={category.label}>
+                      <div className="flex items-center justify-between gap-2 text-xs">
+                        <span className="font-semibold text-slate-700">{category.label}</span>
+                        <span className="text-slate-500">
+                          {category.count} occurrence{category.count === 1 ? '' : 's'}
+                        </span>
+                      </div>
+                      <ProgressBar value={category.percent} className="mt-1.5 h-2" />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <p className="mt-3 text-[10px] text-slate-400">
+                Illustrative prototype data, not actual assessment results.
+              </p>
+
+              <div className="mt-3 border-t border-slate-100 pt-3">
+                <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                  AI-generated observation
+                </p>
+                <p className="mt-1.5 text-sm leading-relaxed text-slate-700">{analysis.observation}</p>
+              </div>
+            </Card>
+          )}
 
           <div className="mt-3 space-y-3">
             {submissions.length === 0 ? (

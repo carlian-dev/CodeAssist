@@ -13,10 +13,10 @@ function SidebarLink({ to, icon, label, end, onNavigate }) {
       onClick={onNavigate}
       className={({ isActive }) =>
         cx(
-          'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition',
+          'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-200',
           isActive
-            ? 'bg-slate-900 text-white shadow-sm'
-            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
+            ? 'bg-indigo-600 text-white shadow-[0_1px_2px_rgba(28,25,21,0.08),0_10px_22px_-12px_rgba(75,70,229,0.75)]'
+            : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800',
         )
       }
     >
@@ -99,7 +99,7 @@ export default function Layout() {
                     'flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition',
                     isActive
                       ? 'bg-indigo-50 text-indigo-800 font-medium'
-                      : 'text-slate-600 hover:bg-slate-100',
+                      : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800',
                   )
                 }
               >
@@ -167,7 +167,9 @@ export default function Layout() {
                   className={({ isActive }) =>
                     cx(
                       'flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition',
-                      isActive ? 'bg-indigo-50 text-indigo-800' : 'text-slate-600 hover:bg-slate-100',
+                      isActive
+                        ? 'bg-indigo-50 text-indigo-800'
+                        : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800',
                     )
                   }
                 >

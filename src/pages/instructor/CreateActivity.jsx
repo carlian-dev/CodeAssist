@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useStore } from '../../store/store'
 import { sectionById, subjectById } from '../../lib/selectors'
-import { generateProblem } from '../../lib/blink'
+import { generateProblem, generateTestCases } from '../../lib/blink'
+import { CODE_CHECKS, CODE_CHECK_OPTIONS } from '../../lib/codeChecks'
 import { Badge, Blink, Button, Card, Field, Input, Select, Textarea, Toggle, cx } from '../../components/ui'
 import { Icon } from '../../components/icons'
 
@@ -34,9 +35,12 @@ export default function CreateActivity() {
     starterCode: '',
   })
   const [selectedSections, setSelectedSections] = useState([initialSectionId])
+  const [testCases, setTestCases] = useState([])
   const [lesson, setLesson] = useState('')
   const [difficulty, setDifficulty] = useState('medium')
   const [generating, setGenerating] = useState(false)
+  const [generatingTests, setGeneratingTests] = useState(false)
+  const [testNotice, setTestNotice] = useState(null)
   const [aiDrafted, setAiDrafted] = useState(false)
   const [error, setError] = useState('')
 
@@ -44,6 +48,50 @@ export default function CreateActivity() {
 
   const toggleSection = (id) =>
     setSelectedSections((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]))
+
+  const addTestCase = (type = 'output') =>
+    setTestCases((prev) => [
+      ...prev,
+      type === 'code'
+        ? { type: 'code', check: 'loop', label: CODE_CHECKS.loop.label }
+        : { type: 'output', input: '', expectedOutput: '' },
+    ])
+  const updateTestCase = (index, field, value) =>
+    setTestCases((prev) => prev.map((tc, i) => (i === index ? { ...tc, [field]: value } : tc)))
+  const changeTestCheck = (index, check) =>
+    setTestCases((prev) =>
+      prev.map((tc, i) => (i === index ? { ...tc, check, label: CODE_CHECKS[check].label } : tc)),
+    )
+  const removeTestCase = (index) => setTestCases((prev) => prev.filter((_, i) => i !== index))
+
+  const handleGenerateTests = async () => {
+    if (generatingTests || !form.title.trim()) return
+    setGeneratingTests(true)
+    setTestNotice(null)
+    const generated = await generateTestCases({
+      title: form.title,
+      description: form.description,
+      instructions: form.instructions,
+    })
+    const keyFor = (testCase) =>
+      testCase.type === 'code'
+        ? `code:${testCase.check}`
+        : `output:${testCase.input}\u0000${testCase.expectedOutput}`
+    const additions = generated.filter(
+      (testCase) => !testCases.some((existing) => keyFor(existing) === keyFor(testCase)),
+    )
+    if (additions.length > 0) setTestCases((prev) => [...prev, ...additions])
+    setTestNotice({
+      ok: additions.length > 0,
+      text:
+        generated.length === 0
+          ? 'BLINK could not infer test cases for this problem. Add them manually.'
+          : additions.length === 0
+            ? 'BLINK suggested test cases that are already in the list.'
+            : `BLINK added ${additions.length} test case${additions.length === 1 ? '' : 's'}. Review them before publishing.`,
+    })
+    setGeneratingTests(false)
+  }
 
   const handleGenerate = async () => {
     setGenerating(true)
@@ -87,6 +135,17 @@ export default function CreateActivity() {
         instructions: form.instructions.trim(),
         points: Number(form.points) || 0,
         dueDate: dueISO,
+        testCases: testCases
+          .map((tc) =>
+            tc.type === 'code'
+              ? {
+                  type: 'code',
+                  check: tc.check,
+                  label: tc.label.trim() || CODE_CHECKS[tc.check]?.label || 'Code check',
+                }
+              : { type: 'output', input: tc.input, expectedOutput: tc.expectedOutput.trim() },
+          )
+          .filter((tc) => (tc.type === 'code' ? Boolean(tc.check) : Boolean(tc.expectedOutput))),
       },
       sectionIds: selectedSections,
     })
@@ -184,6 +243,128 @@ export default function CreateActivity() {
               className="font-mono text-[13px]"
             />
           </Field>
+
+          <div className="rounded-xl border border-slate-200 p-3.5">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <p className="text-sm font-semibold text-slate-800">Test cases</p>
+                <p className="text-xs text-slate-500">
+                  Submissions are checked against these before you grade.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleGenerateTests}
+                  disabled={generatingTests || !form.title.trim()}
+                >
+                  <Blink
+                    variant="face"
+                    size={16}
+                    mood={generatingTests ? 'thinking' : 'happy'}
+                    animated={generatingTests}
+                    className="mr-0.5"
+                  />
+                  {generatingTests ? 'BLINK is writing...' : 'Generate test cases'}
+                </Button>
+                <Button type="button" variant="secondary" size="sm" onClick={() => addTestCase('output')}>
+                  <Icon name="plus" className="h-3.5 w-3.5" />
+                  Add output test
+                </Button>
+                <Button type="button" variant="secondary" size="sm" onClick={() => addTestCase('code')}>
+                  <Icon name="plus" className="h-3.5 w-3.5" />
+                  Add code check
+                </Button>
+              </div>
+            </div>
+
+            {testNotice && (
+              <p
+                className={cx(
+                  'mt-2 rounded-lg p-2.5 text-[11px] leading-relaxed',
+                  testNotice.ok ? 'bg-indigo-50 text-indigo-700' : 'bg-amber-50 text-amber-700',
+                )}
+              >
+                {testNotice.text}
+              </p>
+            )}
+
+            {testCases.length === 0 ? (
+              <p className="mt-3 rounded-lg border border-dashed border-slate-200 px-3 py-2.5 text-xs text-slate-400">
+                No test cases yet. Add an output test, a code check, or let BLINK generate them.
+              </p>
+            ) : (
+              <div className="mt-3 space-y-3">
+                {testCases.map((testCase, index) => (
+                  <div key={index} className="rounded-lg bg-slate-50 p-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-[11px] font-bold uppercase tracking-wide text-slate-500">
+                          Test {index + 1}
+                        </span>
+                        <Badge tone={testCase.type === 'code' ? 'violet' : 'slate'}>
+                          {testCase.type === 'code' ? 'Code check' : 'Output'}
+                        </Badge>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeTestCase(index)}
+                        title="Remove test case"
+                        className="rounded p-1 text-slate-400 transition hover:bg-white hover:text-rose-600"
+                      >
+                        <Icon name="x" className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    {testCase.type === 'code' ? (
+                      <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                        <Field label="Requirement">
+                          <Input
+                            value={testCase.label}
+                            onChange={(e) => updateTestCase(index, 'label', e.target.value)}
+                            placeholder="e.g. Uses a for loop"
+                          />
+                        </Field>
+                        <Field label="Check">
+                          <Select
+                            value={testCase.check}
+                            onChange={(e) => changeTestCheck(index, e.target.value)}
+                          >
+                            {CODE_CHECK_OPTIONS.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </Select>
+                        </Field>
+                      </div>
+                    ) : (
+                      <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                        <Field label="Input (stdin)">
+                          <Textarea
+                            rows={2}
+                            value={testCase.input}
+                            onChange={(e) => updateTestCase(index, 'input', e.target.value)}
+                            placeholder="e.g. 5"
+                            className="font-mono text-[12.5px]"
+                          />
+                        </Field>
+                        <Field label="Expected output">
+                          <Textarea
+                            rows={2}
+                            value={testCase.expectedOutput}
+                            onChange={(e) => updateTestCase(index, 'expectedOutput', e.target.value)}
+                            placeholder="e.g. 15"
+                            className="font-mono text-[12.5px]"
+                          />
+                        </Field>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
           <div className="rounded-xl border border-slate-200 p-3.5">
             <Toggle

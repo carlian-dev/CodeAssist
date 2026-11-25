@@ -1,3 +1,5 @@
+import { CODE_CHECKS } from './codeChecks'
+
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const TEMPLATES = {
@@ -114,6 +116,161 @@ export async function generateProblem({ lesson, subjectId, difficulty = 'medium'
   }
 }
 
+const TEST_CASE_BANK = [
+  {
+    match: /hello,?\s*world/i,
+    cases: [{ input: '', expectedOutput: 'Hello, World!' }],
+  },
+  {
+    match: /greeting|ask for a name/i,
+    cases: [{ input: 'Ada', expectedOutput: 'Hello, Ada!' }],
+  },
+  {
+    match: /personal info|info card/i,
+    cases: [{ input: '', expectedOutput: 'Ada\n18\nMath' }],
+  },
+  {
+    match: /variables|data types|student record/i,
+    cases: [{ input: '', expectedOutput: 'Ada\n18\n92.5' }],
+  },
+  {
+    match: /pass or fail|pass\/fail|conditionals/i,
+    cases: [
+      { input: '82', expectedOutput: 'Pass' },
+      { input: '60', expectedOutput: 'Fail' },
+      { input: '75', expectedOutput: 'Pass' },
+    ],
+    checks: ['conditional'],
+  },
+  {
+    match: /temperature|celsius|fahrenheit/i,
+    cases: [
+      { input: '100', expectedOutput: '212.0' },
+      { input: '0', expectedOutput: '32.0' },
+    ],
+  },
+  {
+    match: /calculator|operator/i,
+    cases: [
+      { input: '2\n+\n3', expectedOutput: '5' },
+      { input: '7\n*\n6', expectedOutput: '42' },
+      { input: '9\n-\n4', expectedOutput: '5' },
+    ],
+    checks: ['conditional'],
+  },
+  {
+    match: /triangle|pyramid|stars/i,
+    cases: [
+      { input: '3', expectedOutput: '*\n**\n***' },
+      { input: '1', expectedOutput: '*' },
+    ],
+    checks: ['nestedLoop'],
+  },
+  {
+    match: /sum/i,
+    cases: [
+      { input: '5', expectedOutput: '15' },
+      { input: '1', expectedOutput: '1' },
+    ],
+    checks: ['loop', 'noSum'],
+  },
+  {
+    match: /prime/i,
+    cases: [
+      { input: '7', expectedOutput: 'Prime' },
+      { input: '8', expectedOutput: 'Not Prime' },
+    ],
+    checks: ['loop'],
+  },
+  {
+    match: /fibonacci|\bfib\b/i,
+    cases: [
+      { input: '0', expectedOutput: '0' },
+      { input: '6', expectedOutput: '8' },
+      { input: '10', expectedOutput: '55' },
+    ],
+    checks: ['function', 'recursion', 'noLoop'],
+  },
+  {
+    match: /palindrome/i,
+    cases: [
+      { input: 'racecar', expectedOutput: 'Palindrome' },
+      { input: 'hello', expectedOutput: 'Not a palindrome' },
+    ],
+    checks: ['function'],
+  },
+  {
+    match: /bubble sort|sort a list|sort the list|sorting/i,
+    cases: [
+      { input: '5 3 1 4 2', expectedOutput: '1 2 3 4 5' },
+      { input: '2 2 1', expectedOutput: '1 2 2' },
+    ],
+    checks: ['nestedLoop', 'noSort'],
+  },
+  {
+    match: /binary search/i,
+    cases: [
+      { input: '1 3 5 7 9\n5', expectedOutput: '2' },
+      { input: '1 3 5\n4', expectedOutput: '-1' },
+    ],
+    checks: ['loop'],
+  },
+  {
+    match: /vowel/i,
+    cases: [
+      { input: 'education', expectedOutput: '5' },
+      { input: 'xyz', expectedOutput: '0' },
+    ],
+    checks: ['loop'],
+  },
+  {
+    match: /largest|find the max|maximum value/i,
+    cases: [
+      { input: '3 9 2', expectedOutput: '9' },
+      { input: '4 4 1', expectedOutput: '4' },
+    ],
+    checks: ['loop', 'noMax'],
+  },
+  {
+    match: /word frequency|frequency|dictionary/i,
+    cases: [{ input: 'the cat the', expectedOutput: 'the 2\ncat 1' }],
+    checks: ['loop', 'dictionary'],
+  },
+  {
+    match: /power function|power\s*\(/i,
+    cases: [
+      { input: '2\n5', expectedOutput: '32' },
+      { input: '3\n0', expectedOutput: '1' },
+    ],
+    checks: ['function', 'recursion'],
+  },
+  {
+    match: /reverse/i,
+    cases: [{ input: '1 2 3', expectedOutput: '3 2 1' }],
+    checks: ['loop'],
+  },
+  {
+    match: /\bclass(es)?\b/i,
+    cases: [],
+    checks: ['class', 'init'],
+  },
+]
+
+export async function generateTestCases({ title = '', description = '', instructions = '' }) {
+  await wait(900)
+  const text = [title, description, instructions].join('\n')
+  const entry = TEST_CASE_BANK.find((item) => item.match.test(text))
+  if (!entry) return []
+  return [
+    ...(entry.cases || []).map((testCase) => ({ type: 'output', ...testCase })),
+    ...(entry.checks || []).map((check) => ({
+      type: 'code',
+      check,
+      label: CODE_CHECKS[check].label,
+    })),
+  ]
+}
+
 function analyze(activity, code) {
   const text = code || ''
   const notes = []
@@ -164,6 +321,16 @@ function analyze(activity, code) {
       notes.push('Bubble sort needs a loop that compares neighbouring values and swaps them.')
       review.push('nested loops and swapping values')
     }
+  }
+
+  if (/range\s*\(\s*len\s*\([^)]*\)\s*-\s*1/.test(text)) {
+    notes.push('Your loop walks the list backwards with hand-computed bounds. That is a common place for off-by-one errors.')
+    review.push('loop boundaries and reverse iteration')
+  }
+
+  if (/\w+\s*\[\s*\w+\s*\]/.test(text)) {
+    notes.push('You index the list manually in several places. Double-check that every index stays in range.')
+    review.push('array indexing and bounds checking')
   }
 
   if (!/\bprint\s*\(|console\.log|cout|System\.out/.test(text)) {
@@ -229,4 +396,55 @@ export async function instructorFeedback({ activity, submission }) {
 
   const body = notes.slice(0, 2).join(' ')
   return `${opener} ${body} Review the relevant topic to keep improving.`
+}
+
+const ISSUE_GROUPS = [
+  { label: 'Incorrect loop conditions', topic: 'loop conditions', test: /loop/i, advice: 'Review loop boundaries and iteration logic.' },
+  { label: 'Array index errors', topic: 'array indexing', test: /index/i, advice: 'Review index bounds and off-by-one errors.' },
+  { label: 'Missing or incorrect output', topic: 'output formatting', test: /output statement/i, advice: 'Check that printed output matches the expected format exactly.' },
+  { label: 'Unfinished placeholders', topic: 'incomplete placeholders', test: /pass placeholder/i, advice: 'Look for remaining pass statements and unfinished branches.' },
+  { label: 'Incorrect function or class usage', topic: 'function and class usage', test: /function|class|return statement/i, advice: 'Review function returns, class definitions, and how methods are called.' },
+  { label: 'Shortcut patterns', topic: 'built-in shortcuts', test: /shortcut|built-in/i, advice: 'Practice the underlying pattern instead of relying on built-ins.' },
+  { label: 'Empty submissions', topic: 'empty submissions', test: /submission is empty/i, advice: 'Follow up with students who submitted an empty solution.' },
+]
+
+export async function analyzeSubmissions({ activity, submissions }) {
+  await wait(1000)
+  const counts = new Map()
+
+  submissions.forEach((submission) => {
+    const { notes } = analyze(activity, submission.code)
+    const counted = new Set()
+    notes.forEach((note) => {
+      const group = ISSUE_GROUPS.find((item) => item.test.test(note))
+      if (!group || counted.has(group.label)) return
+      counted.add(group.label)
+      counts.set(group.label, (counts.get(group.label) || 0) + 1)
+    })
+  })
+
+  const categories = [...counts.entries()]
+    .map(([label, count]) => {
+      const group = ISSUE_GROUPS.find((item) => item.label === label)
+      return {
+        label,
+        topic: group.topic,
+        advice: group.advice,
+        count,
+        percent: submissions.length ? (count / submissions.length) * 100 : 0,
+      }
+    })
+    .sort((a, b) => b.count - a.count)
+
+  const top = categories[0]
+  const who = submissions.length === 1 ? 'The student' : 'Students'
+  let observation = 'Most submissions look structurally sound. Focus feedback on edge cases and matching the expected output exactly.'
+  if (top) {
+    observation =
+      top.label === 'Empty submissions'
+        ? `${who} submitted an empty solution. Follow up before grading.`
+        : `${who} frequently ${submissions.length === 1 ? 'makes' : 'make'} mistakes involving ${top.topic}. ${top.advice}`
+  }
+
+  return { analyzed: submissions.length, categories, observation }
 }
