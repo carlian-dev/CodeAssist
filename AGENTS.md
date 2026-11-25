@@ -13,7 +13,7 @@ CodeAssist is a **frontend-only** prototype: React 19 + Vite 8 + Tailwind v4. St
 ## Architecture
 
 - Entry: `src/main.jsx` nests `BrowserRouter > StoreProvider > AuthProvider > App`. Routes and role guards live in `src/App.jsx`.
-- Route map: `/login`, `/student`, `/student/activity/:activityId`, `/instructor`, `/instructor/section/:sectionId`, `/instructor/activity/new`, `/instructor/activity/:activityId`.
+- Route map: `/login`, `/student`, `/student/activity/:activityId`, `/instructor`, `/instructor/section/:sectionId`, `/instructor/activity/new`, `/instructor/activity/:activityId`, plus `/playground` shared by both roles.
 - No API calls. All state is seeded from `src/data/seed.js` into localStorage key `codeassist:db:v1`; session lives in `codeassist:session:v1`. "Reset demo" on the login page reseeds.
 - Mutate data only via `useStore()` actions: `submitActivity`, `gradeSubmission`, `createActivities`, `updateActivity`, `resetDemo`. Never write to `db` directly.
 - `useAuth()` exposes `user`, `login(id)`, `logout()`. Login is a demo-account picker — no passwords or real auth.

@@ -205,7 +205,7 @@ export async function studentBlinkReply({ activity, code, question, subject }) {
   lines.push('')
   lines.push(
     subject
-      ? `Try reworking one small piece at a time, then run it again. You have already submitted, so feel free to resubmit after revising.`
+      ? `Review the feedback above and keep practicing with small test cases to solidify your understanding.`
       : 'Try reworking one small piece at a time, then run it again.',
   )
   lines.push('')
@@ -228,5 +228,5 @@ export async function instructorFeedback({ activity, submission }) {
           : 'This needs another pass.'
 
   const body = notes.slice(0, 2).join(' ')
-  return `${opener} ${body} Review the relevant topic and feel free to resubmit for another look.`
+  return `${opener} ${body} Review the relevant topic to keep improving.`
 }

@@ -60,6 +60,13 @@ const PATHS = {
     </>
   ),
   bolt: <path d="M13 3 5 13h6l-1 8 8-10h-6l1-8Z" />,
+  play: <path d="M8 5.5v13l10-6.5-10-6.5Z" fill="currentColor" stroke="none" />,
+  terminal: (
+    <>
+      <path d="m5 7 4.5 4.5L5 16" />
+      <path d="M12.5 16H19" />
+    </>
+  ),
   layers: (
     <>
       <path d="m12 3 9 5-9 5-9-5 9-5Z" />

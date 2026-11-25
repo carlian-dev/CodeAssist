@@ -52,7 +52,7 @@ export default function Login() {
 
     let matched = db.users.find((u) => u.email.toLowerCase() === cleanEmail)
     if (!matched) {
-      if (cleanEmail === 'student@codeassist.edu' || cleanEmail === 'student@demo.com') {
+      if (cleanEmail === 'student@codeassist.edu') {
         matched = db.users.find((u) => u.id === 'stu-1') || db.users.find((u) => u.role === 'student')
       } else if (cleanEmail === 'instructor@demo.com') {
         matched = db.users.find((u) => u.id === 'ins-1') || db.users.find((u) => u.role === 'instructor')

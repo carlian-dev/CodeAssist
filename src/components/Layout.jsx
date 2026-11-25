@@ -84,47 +84,54 @@ export default function Layout() {
             end
             onNavigate={close}
           />
+          <SidebarLink to="/playground" icon="code" label="Playground" onNavigate={close} />
         </div>
 
         {isStudent ? (
           <div className="space-y-1">
-            <GroupLabel>Class</GroupLabel>
+            <GroupLabel>Class Section</GroupLabel>
             {studentSection ? (
-              <Link
-                to="/student"
+              <NavLink
+                to={`/student/section/${studentSection.id}`}
                 onClick={close}
-                className={cx(
-                  'flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition',
-                  location.pathname === '/student'
-                    ? 'bg-indigo-50 text-indigo-800'
-                    : 'text-slate-600 hover:bg-slate-100',
-                )}
+                className={({ isActive }) =>
+                  cx(
+                    'flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition',
+                    isActive
+                      ? 'bg-indigo-50 text-indigo-800 font-medium'
+                      : 'text-slate-600 hover:bg-slate-100',
+                  )
+                }
               >
-                <span
-                  className={cx(
-                    'grid h-7 w-9 shrink-0 place-items-center rounded-lg text-[10px] font-bold tracking-wide',
-                    location.pathname === '/student' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500',
-                  )}
-                >
-                  {studentSection.code}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate">{studentSection.name}</span>
-                  {(() => {
-                    const subject = subjectMap.get(studentSection.subjectId)
-                    return subject ? (
-                      <span
-                        className={cx(
-                          'block truncate text-[11px] leading-tight',
-                          location.pathname === '/student' ? 'text-indigo-500' : 'text-slate-400',
-                        )}
-                      >
-                        {subject.code} · {subject.name}
-                      </span>
-                    ) : null
-                  })()}
-                </span>
-              </Link>
+                {({ isActive }) => (
+                  <>
+                    <span
+                      className={cx(
+                        'grid h-7 w-9 shrink-0 place-items-center rounded-lg text-[10px] font-bold tracking-wide',
+                        isActive ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500',
+                      )}
+                    >
+                      {studentSection.code}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate">{studentSection.name}</span>
+                      {(() => {
+                        const subject = subjectMap.get(studentSection.subjectId)
+                        return subject ? (
+                          <span
+                            className={cx(
+                              'block truncate text-[11px] leading-tight',
+                              isActive ? 'text-indigo-600' : 'text-slate-400',
+                            )}
+                          >
+                            {subject.code} · {subject.name}
+                          </span>
+                        ) : null
+                      })()}
+                    </span>
+                  </>
+                )}
+              </NavLink>
             ) : (
               <p className="px-3 text-xs text-slate-400">No class assigned yet</p>
             )}

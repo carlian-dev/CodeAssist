@@ -1,14 +1,14 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { createSeed } from '../data/seed'
 
-const DB_KEY = 'codeassist:db:v1'
+const DB_KEY = 'codeassist:db:v2'
 
 function loadDb() {
   try {
     const raw = localStorage.getItem(DB_KEY)
     if (raw) {
       const parsed = JSON.parse(raw)
-      if (parsed && parsed.version === 1) return parsed
+      if (parsed && parsed.version === 2) return parsed
     }
   } catch {
     // fall through to a fresh seed

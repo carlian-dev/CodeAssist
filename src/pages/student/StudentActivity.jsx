@@ -88,7 +88,7 @@ export default function StudentActivity() {
   const lineCount = code.split('\n').length
 
   const handleSubmit = () => {
-    if (!code.trim()) return
+    if (!code.trim() || submission) return
     submitActivity({ activityId: activity.id, studentId: user.id, code })
     setJustSubmitted(true)
   }
@@ -117,13 +117,20 @@ export default function StudentActivity() {
 
   return (
     <div>
-      <Link
-        to="/student"
-        className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 transition hover:text-indigo-600"
-      >
-        <Icon name="arrowLeft" className="h-4 w-4" />
-        Back to dashboard
-      </Link>
+      <div className="flex items-center gap-2 text-sm text-slate-500">
+        <Link to="/student" className="font-medium hover:text-indigo-600 transition">
+          Dashboard
+        </Link>
+        <span>/</span>
+        <Link
+          to={`/student/section/${activity.sectionId}`}
+          className="font-medium hover:text-indigo-600 transition"
+        >
+          {section?.code || 'Section'}
+        </Link>
+        <span>/</span>
+        <span className="font-semibold text-slate-800 truncate max-w-xs">{activity.title}</span>
+      </div>
 
       <header className="mt-4">
         <div className="flex flex-wrap items-center gap-2">
@@ -220,31 +227,51 @@ export default function StudentActivity() {
             <textarea
               value={code}
               onChange={(e) => setCode(e.target.value)}
+              readOnly={Boolean(submission)}
               spellCheck={false}
               autoCapitalize="off"
               autoCorrect="off"
-              className="block min-h-[320px] w-full resize-y bg-slate-900 p-4 font-mono text-[13px] leading-relaxed text-slate-100 outline-none placeholder:text-slate-500"
+              className={cx(
+                'block min-h-[320px] w-full resize-y bg-slate-900 p-4 font-mono text-[13px] leading-relaxed text-slate-100 outline-none placeholder:text-slate-500',
+                submission && 'cursor-default opacity-90',
+              )}
               placeholder="Write your solution here..."
             />
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-700 bg-slate-800 px-4 py-3">
               <div className="flex items-center gap-3 text-xs text-slate-400">
                 <span>{lineCount} lines</span>
-                <button
-                  type="button"
-                  onClick={() => setCode(activity.starterCode)}
-                  className="font-semibold text-slate-400 underline-offset-2 transition hover:text-indigo-300 hover:underline"
-                >
-                  Reset to starter
-                </button>
+                {!submission && (
+                  <button
+                    type="button"
+                    onClick={() => setCode(activity.starterCode)}
+                    className="font-semibold text-slate-400 underline-offset-2 transition hover:text-indigo-300 hover:underline"
+                  >
+                    Reset to starter
+                  </button>
+                )}
               </div>
               <div className="flex items-center gap-3">
-                {submission && (
-                  <span className="hidden text-[11px] text-slate-400 sm:block">Resubmitting replaces your previous work</span>
+                {submission ? (
+                  <>
+                    <span className="hidden text-[11px] text-slate-400 sm:block">
+                      Submitted {timeAgo(submission.submittedAt)}
+                    </span>
+                    <button
+                      type="button"
+                      disabled
+                      aria-disabled="true"
+                      className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/15 px-4 py-2.5 text-sm font-semibold text-emerald-400 shadow-xs cursor-default"
+                    >
+                      <Icon name="check" className="h-4 w-4" />
+                      Turned In
+                    </button>
+                  </>
+                ) : (
+                  <Button onClick={handleSubmit} disabled={!code.trim()}>
+                    <Icon name="send" className="h-4 w-4" />
+                    Submit solution
+                  </Button>
                 )}
-                <Button onClick={handleSubmit} disabled={!code.trim()}>
-                  <Icon name="send" className="h-4 w-4" />
-                  {submission ? 'Resubmit code' : 'Submit solution'}
-                </Button>
               </div>
             </div>
           </div>

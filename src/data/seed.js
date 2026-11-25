@@ -32,16 +32,7 @@ export const INSTRUCTOR = {
 }
 
 const STUDENT_SEED = [
-  { id: 'stu-1', name: 'Juan Dela Cruz', email: 'juan@student.edu', sectionId: 't151' },
-  { id: 'stu-2', name: 'Maria Santos', email: 'maria@student.edu', sectionId: 't151' },
-  { id: 'stu-3', name: 'Andres Bonifacio', email: 'andres@student.edu', sectionId: 't152' },
-  { id: 'stu-4', name: 'Melchora Aquino', email: 'melchora@student.edu', sectionId: 't152' },
-  { id: 'stu-5', name: 'Jose Rizal', email: 'jose@student.edu', sectionId: 't153' },
-  { id: 'stu-6', name: 'Apolinario Mabini', email: 'apolinario@student.edu', sectionId: 't153' },
-  { id: 'stu-7', name: 'Gabriela Silang', email: 'gabriela@student.edu', sectionId: 't154' },
-  { id: 'stu-8', name: 'Lapu-Lapu', email: 'lapulapu@student.edu', sectionId: 't154' },
-  { id: 'stu-9', name: 'Emilio Aguinaldo', email: 'emilio@student.edu', sectionId: 't155' },
-  { id: 'stu-10', name: 'Gregoria de Jesus', email: 'gregoria@student.edu', sectionId: 't155' },
+  { id: 'stu-1', name: 'Juan Dela Cruz', email: 'student@codeassist.edu', sectionId: 't151' },
 ]
 
 const ACTIVITY_SEED = [
@@ -138,45 +129,15 @@ const SUBMISSION_SEED = [
     code: 'print("Hello, World!")\n',
   },
   {
-    id: 's2', activityId: 'a1', studentId: 'stu-2', status: 'graded', grade: 88,
-    submittedAt: due(-12), feedback: 'Almost there — the comma after "Hello" is part of the required output.',
-    code: 'print("Hello World")\n',
-  },
-  {
     id: 's3', activityId: 'a4', studentId: 'stu-1', status: 'submitted', grade: null,
     submittedAt: due(-1), feedback: '',
     code: 'values = input().split()\nrev = []\nfor i in range(len(values) - 1, -1, -1):\n    rev.append(values[i])\nprint(" ".join(rev))\n',
-  },
-  {
-    id: 's4', activityId: 'b1', studentId: 'stu-3', status: 'submitted', grade: null,
-    submittedAt: due(-1), feedback: '',
-    code: 'n = int(input())\nfor i in range(1, n + 1):\n    print("*" * i)\n',
-  },
-  {
-    id: 's5', activityId: 'b1', studentId: 'stu-4', status: 'submitted', grade: null,
-    submittedAt: due(0), feedback: '',
-    code: 'n = int(input())\nrow = 1\nwhile row <= n:\n    print("*" * row)\n    row += 1\n',
-  },
-  {
-    id: 's6', activityId: 'c1', studentId: 'stu-5', status: 'submitted', grade: null,
-    submittedAt: due(0), feedback: '',
-    code: 'n = int(input())\nif n < 2:\n    print("Not Prime")\nelse:\n    prime = True\n    for i in range(2, int(n ** 0.5) + 1):\n        if n % i == 0:\n            prime = False\n            break\n    print("Prime" if prime else "Not Prime")\n',
-  },
-  {
-    id: 's7', activityId: 'd1', studentId: 'stu-7', status: 'graded', grade: 90,
-    submittedAt: due(-1), feedback: 'Nicely formatted. Try solving it with a while loop next time for practice.',
-    code: 'n = int(input())\nfor i in range(1, 11):\n    print(f"{n} x {i} = {n * i}")\n',
-  },
-  {
-    id: 's8', activityId: 'e1', studentId: 'stu-9', status: 'submitted', grade: null,
-    submittedAt: due(0), feedback: '',
-    code: 'values = list(map(int, input().split()))\nfor i in range(len(values)):\n    for j in range(0, len(values) - i - 1):\n        if values[j] > values[j + 1]:\n            values[j], values[j + 1] = values[j + 1], values[j]\nprint(" ".join(map(str, values)))\n',
   },
 ]
 
 export function createSeed() {
   return {
-    version: 1,
+    version: 2,
     subjects: SUBJECTS,
     sections: SECTIONS,
     users: [
